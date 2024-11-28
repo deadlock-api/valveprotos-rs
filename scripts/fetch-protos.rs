@@ -35,7 +35,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 remote_dir, file_name
             );
             eprintln!("fetching {} -> {}", &url, file_path.display());
-            let body = ureq::get(&url).call()?.into_string()?;
+            let body = ureq::get(&url).call()?.into_body().read_to_string()?;
 
             fs::write(file_path, body)?;
         }

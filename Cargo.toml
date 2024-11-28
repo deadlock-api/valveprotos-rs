@@ -8,6 +8,7 @@ path = "lib.rs"
 
 [dependencies]
 prost = "0.13.4"
+ureq = { version = "3.0.4", features = ["json"] }
 
 [build-dependencies]
 heck = "0.5.0"
@@ -21,3 +22,6 @@ dota2 = ["gcsdk"]
 gcsdk = []
 protobuf-src = ["dep:protobuf-src"]
 
+[[bin]]
+name = "fetch-protos"
+path = "scripts/fetch-protos.rs"
