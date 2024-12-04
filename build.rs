@@ -2,6 +2,7 @@ use std::{fs, io, path::PathBuf};
 
 use prost_build::Config;
 use prost_types::FileDescriptorSet;
+use std::env;
 
 fn collect_protos(dir: &str) -> io::Result<Vec<PathBuf>> {
     fs::read_dir(dir)?
@@ -57,6 +58,16 @@ fn load_common_protos() -> io::Result<(FileDescriptorSet, Config)> {
     let mut config = Config::default();
     config.default_package_filename("common");
 
+    #[cfg(feature = "serde")]
+    {
+        config
+            .compile_well_known_types()
+            .type_attribute(".", "#[derive(serde::Serialize,serde::Deserialize)]")
+            .extern_path(".google.protobuf.Any", "::prost_wkt_types::Any")
+            .extern_path(".google.protobuf.Timestamp", "::prost_wkt_types::Timestamp")
+            .extern_path(".google.protobuf.Value", "::prost_wkt_types::Value");
+    }
+
     let protos = collect_protos("protos/common")?;
     Ok((config.load_fds(&protos, &["protos/common"])?, config))
 }
@@ -64,6 +75,15 @@ fn load_common_protos() -> io::Result<(FileDescriptorSet, Config)> {
 fn load_gcsdk_protos() -> io::Result<(FileDescriptorSet, Config)> {
     let mut config = Config::default();
     config.default_package_filename("gcsdk");
+    #[cfg(feature = "serde")]
+    {
+        config
+            .compile_well_known_types()
+            .type_attribute(".", "#[derive(serde::Serialize,serde::Deserialize)]")
+            .extern_path(".google.protobuf.Any", "::prost_wkt_types::Any")
+            .extern_path(".google.protobuf.Timestamp", "::prost_wkt_types::Timestamp")
+            .extern_path(".google.protobuf.Value", "::prost_wkt_types::Value");
+    }
 
     let protos = collect_protos("protos/gcsdk")?;
     Ok((config.load_fds(&protos, &["protos/gcsdk"])?, config))
@@ -71,8 +91,24 @@ fn load_gcsdk_protos() -> io::Result<(FileDescriptorSet, Config)> {
 
 #[cfg(feature = "deadlock")]
 fn compile_deadlock_protos(externs: &[ExternDefs]) -> io::Result<()> {
+    let out = PathBuf::from(std::env::var("OUT_DIR").unwrap());
+
+    #[allow(unused)]
+    let descriptor_file = out.join("descriptors.bin");
+
     let mut config = Config::default();
     config.default_package_filename("deadlock");
+
+    #[cfg(feature = "serde")]
+    {
+        config
+            .compile_well_known_types()
+            .type_attribute(".", "#[derive(serde::Serialize,serde::Deserialize)]")
+            .extern_path(".google.protobuf.Any", "::prost_wkt_types::Any")
+            .extern_path(".google.protobuf.Timestamp", "::prost_wkt_types::Timestamp")
+            .extern_path(".google.protobuf.Value", "::prost_wkt_types::Value")
+            .file_descriptor_set_path(&descriptor_file);
+    }
 
     decl_externs(externs, &mut config);
 
@@ -80,7 +116,19 @@ fn compile_deadlock_protos(externs: &[ExternDefs]) -> io::Result<()> {
     config.compile_protos(
         &protos,
         &["protos/deadlock", "protos/gcsdk", "protos/common"],
-    )
+    )?;
+
+    #[cfg(feature = "serde")]
+    {
+        use prost_wkt_build::*;
+        let descriptor_bytes = std::fs::read(descriptor_file).unwrap();
+
+        let descriptor = FileDescriptorSet::decode(&descriptor_bytes[..]).unwrap();
+
+        prost_wkt_build::add_serde(out, descriptor);
+    }
+
+    Ok(())
 }
 
 #[cfg(feature = "dota2")]

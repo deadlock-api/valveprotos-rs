@@ -7,18 +7,25 @@ edition = "2024"
 path = "lib.rs"
 
 [dependencies]
-prost = "0.13.5"
+prost = "0.13.3"
+prost-wkt = { version = "0.6.0", optional = true }
+prost-wkt-types = { version = "0.6.0", optional = true }
+serde = { version = "1.0", optional = true }
 ureq = { version = "3.0.11", features = ["json"], optional = true }
 
 [build-dependencies]
 heck = "0.5.0"
-prost-build = "0.13.5"
-prost-types = "0.13.5"
+prost-build = "0.13.3"
+prost-types = "0.13.3"
+protobuf-src = { version = "2.1.0", optional = true }
+prost-wkt-build = { version = "0.6.0", optional = true }
 
 [features]
 deadlock = ["gcsdk"]
 dota2 = ["gcsdk"]
 gcsdk = []
+protobuf-src = ["dep:protobuf-src"]
+serde = ["dep:prost-wkt", "dep:prost-wkt-types", "dep:prost-wkt-build", "dep:serde"]
 requests = ["ureq"]
 
 [[bin]]
