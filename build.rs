@@ -1,8 +1,8 @@
+use std::env;
 use std::{fs, io, path::PathBuf};
 
 use prost_build::Config;
 use prost_types::FileDescriptorSet;
-use std::env;
 
 fn collect_protos(dir: &str) -> io::Result<Vec<PathBuf>> {
     fs::read_dir(dir)?
