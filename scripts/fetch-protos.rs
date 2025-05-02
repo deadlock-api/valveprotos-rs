@@ -31,8 +31,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .to_string_lossy();
 
             let url = format!(
-                "https://raw.githubusercontent.com/SteamDatabase/Protobufs/refs/heads/master/{}/{}",
-                remote_dir, file_name
+                "https://raw.githubusercontent.com/SteamDatabase/Protobufs/refs/heads/master/{remote_dir}/{file_name}"
             );
             eprintln!("fetching {} -> {}", &url, file_path.display());
             let body = ureq::get(&url).call()?.into_body().read_to_string()?;

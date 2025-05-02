@@ -44,7 +44,7 @@ fn decl_externs(externs: &[ExternDefs], config: &mut Config) {
                         return;
                     }
                     config.extern_path(
-                        format!(".{}", name),
+                        format!(".{name}"),
                         format!("{}::{}", rust_path, name.to_upper_camel_case()),
                     );
                     declared.insert(name.to_string());
