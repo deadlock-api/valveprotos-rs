@@ -98,9 +98,6 @@ fn main() -> io::Result<()> {
     // tell cargo that if the given file changes, to rerun this build script.
     println!("cargo::rerun-if-changed=protos");
 
-    #[cfg(feature = "protobuf-src")]
-    std::env::set_var("PROTOC", protobuf_src::protoc());
-
     let (common_fds, mut common_config) = load_common_protos()?;
     common_config.compile_fds(common_fds.clone())?;
 

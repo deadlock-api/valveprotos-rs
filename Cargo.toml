@@ -1,27 +1,27 @@
 [package]
 name = "valveprotos"
 version = "0.0.0"
-edition = "2021"
+edition = "2024"
 
 [lib]
 path = "lib.rs"
 
 [dependencies]
-prost = "0.13.4"
-ureq = { version = "3.0.4", features = ["json"] }
+prost = "0.13.5"
+ureq = { version = "3.0.11", features = ["json"], optional = true }
 
 [build-dependencies]
 heck = "0.5.0"
-prost-build = "0.13.4"
-prost-types = "0.13.4"
-protobuf-src = { version = "2.1.0", optional = true }
+prost-build = "0.13.5"
+prost-types = "0.13.5"
 
 [features]
 deadlock = ["gcsdk"]
 dota2 = ["gcsdk"]
 gcsdk = []
-protobuf-src = ["dep:protobuf-src"]
+requests = ["ureq"]
 
 [[bin]]
 name = "fetch-protos"
 path = "scripts/fetch-protos.rs"
+required-features = ["requests"]
