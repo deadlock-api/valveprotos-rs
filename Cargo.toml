@@ -17,16 +17,12 @@ ureq = { version = "3.0.11", features = ["json"], optional = true }
 heck = "0.5.0"
 prost-build = "0.13.3"
 prost-types = "0.13.3"
-protobuf-src = { version = "2.1.0", optional = true }
 prost-wkt-build = { version = "0.6.0", optional = true }
 
 [features]
-deadlock = ["gcsdk"]
-dota2 = ["gcsdk"]
-gcsdk = []
-protobuf-src = ["dep:protobuf-src"]
+deadlock = []
 serde = ["dep:prost-wkt", "dep:prost-wkt-types", "dep:prost-wkt-build", "dep:serde"]
-requests = ["ureq"]
+requests = ["dep:ureq"]
 
 [[bin]]
 name = "fetch-protos"

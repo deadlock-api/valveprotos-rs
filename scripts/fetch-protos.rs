@@ -15,7 +15,6 @@ const PROTO_DIR_PAIRS: &[(&str, &str)] = &[
     ("common", "dota2"),
     ("gcsdk", "dota2"),
     ("deadlock", "deadlock"),
-    ("dota2", "dota2"),
 ];
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {

@@ -1,4 +1,3 @@
-use std::env;
 use std::{fs, io, path::PathBuf};
 
 use prost_build::Config;
@@ -15,12 +14,12 @@ fn collect_protos(dir: &str) -> io::Result<Vec<PathBuf>> {
         .collect::<io::Result<Vec<_>>>()
 }
 
-#[cfg(any(feature = "deadlock", feature = "dota2"))]
+#[cfg(feature = "deadlock")]
 type ExternDefs<'a> = (&'a FileDescriptorSet, &'static str);
 
 /// declares all enums and messages from ExternDefs' [`FileDescriptorSet`] as external. more info
 /// is available in documentation of [`prost_build::config::Config::extern_path`].
-#[cfg(any(feature = "deadlock", feature = "dota2"))]
+#[cfg(feature = "deadlock")]
 fn decl_externs(externs: &[ExternDefs], config: &mut Config) {
     use std::collections::HashSet;
 
@@ -131,17 +130,6 @@ fn compile_deadlock_protos(externs: &[ExternDefs]) -> io::Result<()> {
     Ok(())
 }
 
-#[cfg(feature = "dota2")]
-fn compile_dota2_protos(externs: &[ExternDefs]) -> io::Result<()> {
-    let mut config = Config::default();
-    config.default_package_filename("dota2");
-
-    decl_externs(externs, &mut config);
-
-    let protos = collect_protos("protos/dota2")?;
-    config.compile_protos(&protos, &["protos/dota2", "protos/gcsdk", "protos/common"])
-}
-
 fn main() -> io::Result<()> {
     // tell cargo that if the given file changes, to rerun this build script.
     println!("cargo::rerun-if-changed=protos");
@@ -154,9 +142,6 @@ fn main() -> io::Result<()> {
 
     #[cfg(feature = "deadlock")]
     compile_deadlock_protos(&[(&common_fds, "crate::common"), (&gcsdk_fds, "crate::gcsdk")])?;
-
-    #[cfg(feature = "dota2")]
-    compile_dota2_protos(&[(&common_fds, "crate::common")])?;
 
     Ok(())
 }

@@ -6,7 +6,7 @@
 //! <https://rust-script.org/>.
 use std::{fs, io, path::Path};
 
-const PROTO_DIRS: &[&str] = &["common", "gcsdk", "deadlock", "dota2"];
+const PROTO_DIRS: &[&str] = &["common", "gcsdk", "deadlock"];
 
 fn main() -> io::Result<()> {
     println!("digraph ImportGraph {{");
