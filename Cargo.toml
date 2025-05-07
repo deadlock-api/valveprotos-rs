@@ -28,3 +28,7 @@ requests = ["dep:ureq"]
 name = "fetch-protos"
 path = "scripts/fetch-protos.rs"
 required-features = ["requests"]
+
+[[bin]]
+name = "graph-imports"
+path = "scripts/graph-imports.rs"
