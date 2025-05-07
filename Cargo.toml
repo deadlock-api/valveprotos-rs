@@ -20,7 +20,10 @@ prost-types = "0.13.5"
 prost-wkt-build = { version = "0.6.1", optional = true }
 
 [features]
-deadlock = []
+gc-common = []
+gc-client = ["gc-common"]
+game-msgs = ["gc-common"]
+user-msgs = ["gc-common"]
 serde = ["dep:prost-wkt", "dep:prost-wkt-types", "dep:prost-wkt-build", "dep:serde"]
 requests = ["dep:ureq"]
 

@@ -3,7 +3,33 @@ use std::{fs, io, path::PathBuf};
 use prost_build::Config;
 use prost_types::FileDescriptorSet;
 
+fn required_protos() -> Vec<&'static str> {
+    let mut protos = vec![];
+    #[cfg(feature = "gc-client")]
+    protos.extend(&["citadel_gcmessages_client.proto"]);
+    #[cfg(feature = "game-msgs")]
+    protos.extend(&["citadel_gcmessages_client.proto"]);
+    #[cfg(feature = "user-msgs")]
+    protos.extend(&[
+        "citadel_gcmessages_client.proto",
+        "gameevents.proto",
+        "networkbasetypes.proto",
+        "network_connection.proto",
+    ]);
+    #[cfg(feature = "gc-common")]
+    protos.extend(&[
+        "citadel_gcmessages_common.proto",
+        "gcsdk_gcmessages.proto",
+        "steammessages.proto",
+        "steammessages_steamlearn.steamworkssdk.proto",
+        "steammessages_unified_base.steamworkssdk.proto",
+        "valveextensions.proto",
+    ]);
+    protos
+}
+
 fn collect_protos(dir: &str) -> io::Result<Vec<PathBuf>> {
+    let protos = required_protos();
     fs::read_dir(dir)?
         .map(|dir_entry| {
             let path = dir_entry?.path();
@@ -11,15 +37,23 @@ fn collect_protos(dir: &str) -> io::Result<Vec<PathBuf>> {
             assert!(path.extension().is_some_and(|ext| ext == "proto"));
             Ok(path)
         })
+        .filter(|p| {
+            p.as_ref().is_ok_and(|p| {
+                protos.contains(
+                    &p.file_name()
+                        .unwrap_or_default()
+                        .to_str()
+                        .unwrap_or_default(),
+                )
+            })
+        })
         .collect::<io::Result<Vec<_>>>()
 }
 
-#[cfg(feature = "deadlock")]
-type ExternDefs<'a> = (&'a FileDescriptorSet, &'static str);
+type ExternDefs<'a> = (&'a Option<FileDescriptorSet>, &'static str);
 
 /// declares all enums and messages from ExternDefs' [`FileDescriptorSet`] as external. more info
 /// is available in documentation of [`prost_build::config::Config::extern_path`].
-#[cfg(feature = "deadlock")]
 fn decl_externs(externs: &[ExternDefs], config: &mut Config) {
     use std::collections::HashSet;
 
@@ -30,6 +64,9 @@ fn decl_externs(externs: &[ExternDefs], config: &mut Config) {
 
     let mut declared: HashSet<String> = Default::default();
     for (fds, rust_path) in externs {
+        let Some(fds) = fds else {
+            continue;
+        };
         for file in &fds.file {
             file.enum_type
                 .iter()
@@ -53,7 +90,7 @@ fn decl_externs(externs: &[ExternDefs], config: &mut Config) {
     }
 }
 
-fn load_common_protos() -> io::Result<(FileDescriptorSet, Config)> {
+fn load_common_protos() -> io::Result<Option<FileDescriptorSet>> {
     let mut config = Config::default();
     config.default_package_filename("common");
 
@@ -68,10 +105,15 @@ fn load_common_protos() -> io::Result<(FileDescriptorSet, Config)> {
     }
 
     let protos = collect_protos("protos/common")?;
-    Ok((config.load_fds(&protos, &["protos/common"])?, config))
+    if protos.is_empty() {
+        return Ok(None);
+    }
+    let common_fds = config.load_fds(&protos, &["protos/common"])?;
+    config.compile_fds(common_fds.clone())?;
+    Ok(Some(common_fds))
 }
 
-fn load_gcsdk_protos() -> io::Result<(FileDescriptorSet, Config)> {
+fn load_gcsdk_protos() -> io::Result<Option<FileDescriptorSet>> {
     let mut config = Config::default();
     config.default_package_filename("gcsdk");
     #[cfg(feature = "serde")]
@@ -85,10 +127,14 @@ fn load_gcsdk_protos() -> io::Result<(FileDescriptorSet, Config)> {
     }
 
     let protos = collect_protos("protos/gcsdk")?;
-    Ok((config.load_fds(&protos, &["protos/gcsdk"])?, config))
+    if protos.is_empty() {
+        return Ok(None);
+    }
+    let gcsdk_fds = config.load_fds(&protos, &["protos/gcsdk"])?;
+    config.compile_fds(gcsdk_fds.clone())?;
+    Ok(Some(gcsdk_fds))
 }
 
-#[cfg(feature = "deadlock")]
 fn compile_deadlock_protos(externs: &[ExternDefs]) -> io::Result<()> {
     let out = PathBuf::from(std::env::var("OUT_DIR").unwrap());
 
@@ -120,9 +166,9 @@ fn compile_deadlock_protos(externs: &[ExternDefs]) -> io::Result<()> {
     #[cfg(feature = "serde")]
     {
         use prost_wkt_build::*;
-        let descriptor_bytes = std::fs::read(descriptor_file).unwrap();
+        let descriptor_bytes = std::fs::read(descriptor_file)?;
 
-        let descriptor = FileDescriptorSet::decode(&descriptor_bytes[..]).unwrap();
+        let descriptor = FileDescriptorSet::decode(&descriptor_bytes[..])?;
 
         prost_wkt_build::add_serde(out, descriptor);
     }
@@ -134,13 +180,9 @@ fn main() -> io::Result<()> {
     // tell cargo that if the given file changes, to rerun this build script.
     println!("cargo::rerun-if-changed=protos");
 
-    let (common_fds, mut common_config) = load_common_protos()?;
-    common_config.compile_fds(common_fds.clone())?;
+    let common_fds = load_common_protos()?;
+    let gcsdk_fds = load_gcsdk_protos()?;
 
-    let (gcsdk_fds, mut gcsdk_config) = load_gcsdk_protos()?;
-    gcsdk_config.compile_fds(gcsdk_fds.clone())?;
-
-    #[cfg(feature = "deadlock")]
     compile_deadlock_protos(&[(&common_fds, "crate::common"), (&gcsdk_fds, "crate::gcsdk")])?;
 
     Ok(())
