@@ -10,7 +10,7 @@ path = "lib.rs"
 prost = "0.13.5"
 prost-wkt = { version = "0.6.1", optional = true }
 prost-wkt-types = { version = "0.6.1", optional = true }
-serde = { version = "1.0.219", optional = true }
+serde = { version = "1.0.219", optional = true, features = ["derive"] }
 ureq = { version = "3.0.11", features = ["json"], optional = true }
 
 [build-dependencies]
