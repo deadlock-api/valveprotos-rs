@@ -13,6 +13,7 @@ fn required_protos() -> Vec<&'static str> {
     protos.extend(&[
         "usercmd.proto",
         "citadel_usercmd.proto",
+        "citadel_gameevents.proto",
         "citadel_usermessages.proto",
         "citadel_gcmessages_client.proto",
         "demo.proto",
