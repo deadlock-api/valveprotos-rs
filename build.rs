@@ -11,6 +11,8 @@ fn required_protos() -> Vec<&'static str> {
     protos.extend(&["citadel_gcmessages_client.proto"]);
     #[cfg(feature = "user-msgs")]
     protos.extend(&[
+        "usercmd.proto",
+        "citadel_usercmd.proto",
         "citadel_usermessages.proto",
         "citadel_gcmessages_client.proto",
         "demo.proto",
