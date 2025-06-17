@@ -7,16 +7,16 @@ edition = "2024"
 path = "lib.rs"
 
 [dependencies]
-prost = "0.13"
+prost = "0.13.2"
 prost-wkt = { version = "0.6", optional = true }
 prost-wkt-types = { version = "0.6", optional = true }
-serde = { version = "1.0", optional = true, features = ["derive"] }
+serde = { version = "1.0.204", optional = true, features = ["derive"] }
 ureq = { version = "3.0", features = ["json"], optional = true }
 
 [build-dependencies]
 heck = "0.5"
-prost-build = "0.13"
-prost-types = "0.13"
+prost-build = "0.13.2"
+prost-types = "0.13.2"
 prost-wkt-build = { version = "0.6", optional = true }
 
 [features]
