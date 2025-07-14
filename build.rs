@@ -105,7 +105,7 @@ fn load_common_protos() -> io::Result<Option<FileDescriptorSet>> {
     {
         config
             .compile_well_known_types()
-            .type_attribute(".", "#[derive(serde::Serialize)]")
+            .type_attribute(".", "#[derive(serde::Serialize, serde::Deserialize)]")
             .extern_path(".google.protobuf.Any", "::prost_wkt_types::Any")
             .extern_path(".google.protobuf.Timestamp", "::prost_wkt_types::Timestamp")
             .extern_path(".google.protobuf.Value", "::prost_wkt_types::Value");
@@ -127,7 +127,7 @@ fn load_gcsdk_protos() -> io::Result<Option<FileDescriptorSet>> {
     {
         config
             .compile_well_known_types()
-            .type_attribute(".", "#[derive(serde::Serialize)]")
+            .type_attribute(".", "#[derive(serde::Serialize, serde::Deserialize)]")
             .extern_path(".google.protobuf.Any", "::prost_wkt_types::Any")
             .extern_path(".google.protobuf.Timestamp", "::prost_wkt_types::Timestamp")
             .extern_path(".google.protobuf.Value", "::prost_wkt_types::Value");
@@ -155,7 +155,7 @@ fn compile_deadlock_protos(externs: &[ExternDefs]) -> io::Result<()> {
     {
         config
             .compile_well_known_types()
-            .type_attribute(".", "#[derive(serde::Serialize)]")
+            .type_attribute(".", "#[derive(serde::Serialize, serde::Deserialize)]")
             .extern_path(".google.protobuf.Any", "::prost_wkt_types::Any")
             .extern_path(".google.protobuf.Timestamp", "::prost_wkt_types::Timestamp")
             .extern_path(".google.protobuf.Value", "::prost_wkt_types::Value")
