@@ -26,6 +26,7 @@ fn required_protos() -> Vec<&'static str> {
     #[cfg(feature = "gc-common")]
     protos.extend(&[
         "citadel_gcmessages_common.proto",
+        "base_gcmessages.proto",
         "gcsdk_gcmessages.proto",
         "steammessages.proto",
         "steammessages_steamlearn.steamworkssdk.proto",
