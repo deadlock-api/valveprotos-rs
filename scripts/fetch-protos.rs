@@ -39,6 +39,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
 
+    // Add contents of patch.proto to citadel_gcmessages_common.proto
+    let patch = fs::read_to_string("patch.proto")?;
+    let common = fs::read_to_string("protos/deadlock/citadel_gcmessages_common.proto")?;
+    fs::write(
+        "protos/deadlock/citadel_gcmessages_common.proto",
+        common + &patch,
+    )?;
+
     eprintln!("done");
 
     Ok(())
