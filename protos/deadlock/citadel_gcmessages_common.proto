@@ -1,3 +1,5 @@
+syntax = "proto2";
+
 import "steammessages.proto";
 import "gcsdk_gcmessages.proto";
 import "base_gcmessages.proto";
@@ -449,6 +451,7 @@ message CMsgMatchMetaDataContents {
 		optional uint32 sold_time_s = 4;
 		optional uint32 flags = 5;
 		optional uint32 imbued_ability_id = 6;
+		optional uint32 upgrade_info = 7;
 	}
 
 	message Ping {

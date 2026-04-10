@@ -35,6 +35,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             eprintln!("fetching {} -> {}", &url, file_path.display());
             let body = ureq::get(&url).call()?.into_body().read_to_string()?;
 
+            // Ensure syntax declaration is present (protoc warns without it)
+            let body = if !body.contains("syntax = \"proto2\"")
+                && !body.contains("syntax = \"proto3\"")
+            {
+                format!("syntax = \"proto2\";\n\n{body}")
+            } else {
+                body
+            };
+
             fs::write(file_path, body)?;
         }
     }
