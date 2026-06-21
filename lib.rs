@@ -10,4 +10,13 @@ pub mod gcsdk {
 
 pub mod deadlock {
     include!(concat!(env!("OUT_DIR"), "/deadlock.rs"));
+
+    #[cfg(feature = "reflect")]
+    pub static DESCRIPTOR_POOL: std::sync::LazyLock<prost_reflect::DescriptorPool> =
+        std::sync::LazyLock::new(|| {
+            prost_reflect::DescriptorPool::decode(
+                include_bytes!(concat!(env!("OUT_DIR"), "/descriptors.bin")).as_ref(),
+            )
+            .expect("failed to decode descriptor pool")
+        });
 }

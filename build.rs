@@ -159,26 +159,48 @@ fn compile_deadlock_protos(externs: &[ExternDefs]) -> io::Result<()> {
             .type_attribute(".", "#[derive(serde::Serialize, serde::Deserialize)]")
             .extern_path(".google.protobuf.Any", "::prost_wkt_types::Any")
             .extern_path(".google.protobuf.Timestamp", "::prost_wkt_types::Timestamp")
-            .extern_path(".google.protobuf.Value", "::prost_wkt_types::Value")
-            .file_descriptor_set_path(&descriptor_file);
+            .extern_path(".google.protobuf.Value", "::prost_wkt_types::Value");
+    }
+
+    // both serde (prost-wkt) and reflect (prost-reflect) need the descriptor set on disk.
+    #[cfg(any(feature = "serde", feature = "reflect"))]
+    {
+        config.file_descriptor_set_path(&descriptor_file);
     }
 
     decl_externs(externs, &mut config);
 
     let protos = collect_protos("protos/deadlock")?;
-    config.compile_protos(
-        &protos,
-        &["protos/deadlock", "protos/gcsdk", "protos/common"],
-    )?;
+    let includes: &[&str] = &["protos/deadlock", "protos/gcsdk", "protos/common"];
+
+    #[cfg(feature = "reflect")]
+    {
+        prost_reflect_build::Builder::new()
+            .file_descriptor_set_path(&descriptor_file)
+            .descriptor_pool("crate::deadlock::DESCRIPTOR_POOL")
+            .configure(&mut config, &protos, includes)?;
+    }
+
+    config.compile_protos(&protos, includes)?;
 
     #[cfg(feature = "serde")]
     {
         use prost_wkt_build::*;
-        let descriptor_bytes = std::fs::read(descriptor_file)?;
+        let descriptor_bytes = std::fs::read(&descriptor_file)?;
 
         let descriptor = FileDescriptorSet::decode(&descriptor_bytes[..])?;
 
         prost_wkt_build::add_serde(out, descriptor);
+    }
+
+    // expose the descriptor set path to dependent crates' build scripts (via the `links` key)
+    // as DEP_VALVEPROTOS_DESCRIPTORS.
+    #[cfg(feature = "reflect")]
+    {
+        println!(
+            "cargo::metadata=descriptors={}",
+            descriptor_file.display()
+        );
     }
 
     Ok(())
