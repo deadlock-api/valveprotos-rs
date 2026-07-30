@@ -66,6 +66,7 @@ enum CitadelUserMessageIds {
 	k_EUserMsg_ItemDraftReaction = 364;
 	k_EUserMsg_ImportantAbilityUsed = 365;
 	k_EUserMsg_BannedHeroes = 366;
+	k_EUserMsg_ChangeHeroStatus = 370;
 }
 
 enum CitadelEntityMessageIds {
@@ -79,6 +80,7 @@ enum ChatMsgPingMarkerInfo {
 	k_EPingMarkerInfo_OnlyShowMarker = 3 [(schema_friendly_name) = "Only Show Ping Indicator at Ping Location (no ping sound)"];
 	k_EPingMarkerInfo_OnlyPlaySound = 4 [(schema_friendly_name) = "Only Play Ping Sound (and VO)"];
 	k_EPingMarkerInfo_OnlyMiniMap = 5 [(schema_friendly_name) = "Only show on Minimap, no world, no sound"];
+	k_EPingMarkerInfo_NoMarkerYesSoundMiniMap = 6 [(schema_friendly_name) = "No World, Just Minimap and sound"];
 }
 
 enum CameraOperation {
@@ -511,6 +513,7 @@ message CCitadelUserMsg_StaminaConsumed {
 	optional bool drained = 5;
 	optional float stamina_max = 6;
 	optional float gametime = 7;
+	optional bool play_sound = 8;
 }
 
 message CCitadelUserMessage_AbilityNotify {
@@ -681,4 +684,11 @@ message CCitadelUserMessage_ImportantAbilityUsed {
 
 message CCitadelUserMsg_BannedHeroes {
 	repeated uint32 banned_hero_ids = 1;
+}
+
+message CCitadelUserMsg_ChangeHeroStatus {
+	optional bool success = 1;
+	optional bool is_hero_locked = 2;
+	repeated uint32 lock_hero_ids = 3;
+	repeated uint32 unlock_hero_ids = 4;
 }
